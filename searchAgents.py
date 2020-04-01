@@ -137,33 +137,142 @@ class SearchAgent(Agent):
 class DeceptiveSearchAgentpi2(SearchAgent):
     "Search for all food using a sequence of searches"
     def registerInitialState(self, state):
-        self.actions = []
-        currentState = state
-        self.goal = state.getFood().asList()[0]
-        self.fakeGoals = state.getCapsules()[0]
-        pacman_pos = state.getPacmanPosition()
-
         """ COMP90054 part 3a
         Write your code here
         You need to return a list of actions that is a deceptive plan
         """
-        
+        self.actions = []
+        initState = state
+        self.goal = state.getFood().asList()[0]  # coordinates
+        self.fakeGoals = state.getCapsules()[0]  # coordinates
+        pacman_pos = state.getPacmanPosition()  # coordinates
+        walls = state.getWalls()
+        deltaX_PacToGr = abs(pacman_pos[0] - self.goal[0])
+        deltaY_PacToGr = abs(pacman_pos[1] - self.goal[1])
+        deltaX_PacToGf = abs(pacman_pos[0] - self.fakeGoals[0])
+        deltaY_PacToGf = abs(pacman_pos[1] - self.fakeGoals[1])
+        deltaX_GrToGf = abs(self.goal[0] - self.fakeGoals[0])
+        deltaY_GrToGf = abs(self.goal[1] - self.fakeGoals[1])
+        deltaXToLDP = (deltaX_PacToGr + deltaX_GrToGf - deltaX_PacToGf) / 2
+        deltaYToLDP = (deltaY_PacToGr + deltaY_GrToGf - deltaY_PacToGf) / 2
+        deltaSet = (deltaXToLDP, deltaYToLDP)
+        targetPoint = (int(self.goal[0] + deltaSet[0]), int(self.goal[1] + deltaSet[1]))
+
+        currentState = (pacman_pos, '', 0, [])
+        currentNode, action, cost, path = currentState
+        init_D_value = util.manhattanDistance(currentNode, targetPoint)
+        myPqueue = util.PriorityQueue()
+        myPqueue.push(currentState, init_D_value)
+        visited = set()
+
+        while not myPqueue.isEmpty():
+            state = myPqueue.pop()
+            node, action, cost, path = state
+            currentNode = node
+            succList = Actions.getLegalNeighbors(currentNode, walls)
+            if node not in visited:
+                if node == targetPoint:
+                    if node == self.goal:
+                        break
+                    else:
+                        targetPoint = self.goal
+                        D_value = util.manhattanDistance(node, targetPoint)
+                        newstate = (node, action, cost, path)
+                        myPqueue = util.PriorityQueue()
+                        myPqueue.push(newstate, D_value)
+
+                else:
+                    for nextSucc in succList:
+                        D_value = util.manhattanDistance(nextSucc, targetPoint)
+                        if util.manhattanDistance(currentNode, nextSucc) != 0:
+                            if nextSucc == Actions.getSuccessor(currentNode, Directions.NORTH):
+                                action = Directions.NORTH
+                            elif nextSucc == Actions.getSuccessor(currentNode, Directions.EAST):
+                                action = Directions.EAST
+                            elif nextSucc == Actions.getSuccessor(currentNode, Directions.WEST):
+                                action = Directions.WEST
+                            elif nextSucc == Actions.getSuccessor(currentNode, Directions.SOUTH):
+                                action = Directions.SOUTH
+                            newstate = (nextSucc, action, cost + 1, path + [(nextSucc, action)])
+                            myPqueue.push(newstate, D_value)
+
+        self.actions = [action[1] for action in path]
+
         return self.actions
 
 class DeceptiveSearchAgentpi3(SearchAgent):
     "Search for all food using a sequence of searches"
     def registerInitialState(self, state):
-        self.actions = []
-        currentState = state
-        self.goal = state.getFood().asList()[0]
-        self.fakeGoals = state.getCapsules()[0]
-        pacman_pos = state.getPacmanPosition()
-        
         """ COMP90054 part 3b
         Write your code here
         You need to return a list of actions that is a deceptive plan
         """
-        
+        self.actions = []
+        initState = state
+        self.goal = state.getFood().asList()[0]  # coordinates
+        self.fakeGoals = state.getCapsules()[0]  # coordinates
+        pacman_pos = state.getPacmanPosition()  # coordinates
+        walls = state.getWalls()
+        deltaX_PacToGr = abs(pacman_pos[0] - self.goal[0])
+        deltaY_PacToGr = abs(pacman_pos[1] - self.goal[1])
+        deltaX_PacToGf = abs(pacman_pos[0] - self.fakeGoals[0])
+        deltaY_PacToGf = abs(pacman_pos[1] - self.fakeGoals[1])
+        deltaX_GrToGf = abs(self.goal[0] - self.fakeGoals[0])
+        deltaY_GrToGf = abs(self.goal[1] - self.fakeGoals[1])
+        deltaXToLDP = (deltaX_PacToGr + deltaX_GrToGf - deltaX_PacToGf) / 2
+        deltaYToLDP = (deltaY_PacToGr + deltaY_GrToGf - deltaY_PacToGf) / 2
+        deltaSet = (deltaXToLDP, deltaYToLDP)
+        targetPoint = (int(self.goal[0] + deltaSet[0]), int(self.goal[1] + deltaSet[1]))
+
+        currentState = (pacman_pos, '', 0, [])
+        currentNode, action, cost, path = currentState
+        init_D_value = util.manhattanDistance(currentNode, targetPoint)
+        myPqueue = util.PriorityQueue()
+        myPqueue.push(currentState, init_D_value)
+        visited = set()
+
+        while not myPqueue.isEmpty():
+            state = myPqueue.pop()
+            node, action, cost, path = state
+            currentNode = node
+            succList = Actions.getLegalNeighbors(currentNode, walls)
+            if node not in visited:
+                if node == targetPoint:
+                    if node == self.goal:
+                        break
+                    else:
+                        targetPoint = self.goal
+                        D_value = util.manhattanDistance(node, targetPoint)
+                        newstate = (node, action, cost, path)
+                        myPqueue = util.PriorityQueue()
+                        myPqueue.push(newstate, D_value)
+
+                else:
+                    before_Dvalue = util.manhattanDistance(node, targetPoint)
+                    for nextSucc in succList:
+                        D_value = util.manhattanDistance(nextSucc, targetPoint)
+                        if util.manhattanDistance(currentNode, nextSucc) != 0:
+                            if nextSucc == Actions.getSuccessor(currentNode, Directions.NORTH):
+                                action = Directions.NORTH
+                            elif nextSucc == Actions.getSuccessor(currentNode, Directions.EAST):
+                                action = Directions.EAST
+                            elif nextSucc == Actions.getSuccessor(currentNode, Directions.WEST):
+                                action = Directions.WEST
+                            elif nextSucc == Actions.getSuccessor(currentNode, Directions.SOUTH):
+                                action = Directions.SOUTH
+                            newstate = (nextSucc, action, cost + 1, path + [(nextSucc, action)])
+                            if targetPoint != self.goal:
+                                if util.manhattanDistance(nextSucc, self.fakeGoals) > util.manhattanDistance(nextSucc,
+                                                                                                             self.goal):
+                                    D_value = 1.5 * D_value
+                            myPqueue.push(newstate, D_value)
+
+        self.actions = [action[1] for action in path]
+        """
+        COMP90054 part 3b
+        Write your code here
+        You need to return a list of actions that is a deceptive plan
+        """
         return self.actions
 
     def findPathToClosestDot(self, gameState):
