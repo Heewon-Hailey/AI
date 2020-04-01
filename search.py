@@ -123,11 +123,82 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
 def enforcedHillClimbing(problem, heuristic=nullHeuristic):
     """COMP90054 your solution to part 1 here """
-    util.raiseNotDefined()
-    
+    startNode = problem.getStartState()
+    initState = (startNode, '', 0, [])
+    node, action, cost, path = initState
+
+    while not problem.isGoalState(startNode):
+        myqueue = util.Queue()
+        visited = set()
+        currentState = (startNode, action, cost, path)
+        myqueue.push(currentState)
+        while not myqueue.isEmpty():
+            state = myqueue.pop()
+            node, action, cost, path = state
+            if node not in visited:
+                visited.add(node)
+                if heuristic(node, problem) < heuristic(startNode, problem):
+                    startNode = node
+                    break
+                succStates = problem.getSuccessors(node)
+                for succState in succStates:
+                    succNode, succAction, succCost = succState
+                    newState = (succNode, succAction, cost + succCost, path + [(node, action)])
+                    myqueue.push(newState)
+    path = path + [(node, action)]
+    actions = [action[1] for action in path]
+    del actions[0]
+    return actions
+
+
 def idaStarSearch(problem, heuristic=nullHeuristic):
-    """COMP90054 your solution to part 2 here """
-    util.raiseNotDefined()
+    root = problem.getStartState()
+    bound = heuristic(problem.getStartState(), problem)
+    action = ''
+    path = [(root, action)]
+    loop = True
+    global result
+
+    while loop:
+        t = search(path, 0, bound, problem, heuristic)
+        if t == "Found":
+            loop = False
+        elif t == float('inf'):
+            loop = False
+        else:
+            bound = t
+    path = result
+    result = []
+    actions = [action[1] for action in path]
+    del actions[0]
+    return actions
+
+
+def search(path, cost, bound, problem, heuristic):
+    global result
+    result = []
+    reversedPath = path[::-1]
+    node = reversedPath[0][0]
+    f_value = cost + heuristic(node, problem)
+    if f_value > bound:
+        return f_value
+    if problem.isGoalState(node):
+        result = path
+        return "Found"
+
+    min_t = float('inf')
+    succLists = problem.getSuccessors(node)
+    for succState in succLists:
+        succNode, succAction, succCost = succState
+        if [(succNode, succAction)] not in path:
+            path = path + [(succNode, succAction)]
+            t = search(path, cost + succCost, bound, problem, heuristic)
+            if t == "Found":
+                return "Found"
+            if t < min_t:
+                min_t = t
+            path.remove((succNode, succAction))
+    return min_t
 
 
                 
