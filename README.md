@@ -21,7 +21,7 @@ To find other fun tasks, click the link.
     (part3b) πd3 strategy (α = 2) <br>
       `class DeceptiveSearchAgentpi3` in `Search.py`<br>
 
-<!-- 
+
 <br>
 
 ## How to run
@@ -38,7 +38,6 @@ For part3a:<br>
 For part3b:<br>
 `python pacman.py --layout testDeceptive2 --pacman DeceptiveSearchAgentpid3`
 
--->
 <br>
     
 ## References
